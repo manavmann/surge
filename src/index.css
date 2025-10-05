@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* simple light base so you can see styles */
+html, body, #root { height: 100%; }
+body {
+  background: linear-gradient(135deg, rgb(250 250 250), rgb(244 244 245));
+  color: rgb(17 24 39);
+}
