@@ -1,11 +1,19 @@
-import React from 'react';
-import PivotGame from './PivotGame';
+// src/App.jsx
+import React, { useState } from "react";
+import HomePage from "./HomePage.jsx";
+import PivotGame from "./PivotGame.jsx";
 
 export default function App() {
+  const [gameStarted, setGameStarted] = useState(false);
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-zinc-50 via-white to-zinc-100">
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <PivotGame />
+        {gameStarted ? (
+          <PivotGame onExit={() => setGameStarted(false)} />
+        ) : (
+          <HomePage onStartGame={() => setGameStarted(true)} />
+        )}
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 pb-10">

@@ -191,6 +191,15 @@ function differsByOneLetter(word1, word2) {
   return diffs === 1;
 }
 
+// --- Wordle-like scoring helpers ---
+const MAX_MOVES = 5; // you already use 5
+function unusedMovesBonus(movesLeft) {
+  // steeper reward for finishing earlier
+  // 4 left => 25, 3 => 16, 2 => 9, 1 => 4, 0 => 1
+  return (movesLeft + 1) * (movesLeft + 1);
+}
+const CLEAR_BONUS = 5; // keep your existing clear bonus
+
 /* ------------------------------ difficulty rules --------------------------- */
 // removed the “must add N steps” rule
 /* -------------------------------------------------------------------------- */
@@ -461,6 +470,8 @@ function ChainDisplay({ chain, definitions, moveTypes }) {
 function GameOver({ won, score, chain, moveTypes, movesLeft, targetWord, onPlayAgain }) {
   const letterMoves = moveTypes.filter(t => t === 'letter').length;
   const synonymMoves = moveTypes.filter(t => t === 'synonym').length;
+  const unusedBonus = unusedMovesBonus(movesLeft);
+
 
   return (
     <motion.div
@@ -518,7 +529,7 @@ function GameOver({ won, score, chain, moveTypes, movesLeft, targetWord, onPlayA
                 <Award className="w-4 h-4" />
                 Unused moves
               </span>
-              <span className="font-bold text-gray-900">+{movesLeft}</span>
+              <span className="font-bold text-gray-900">+{unusedBonus}</span>
             </div>
             <div className="pt-3 border-t-2 border-gray-200 flex items-center justify-between">
               <span className="text-sm font-bold text-gray-700">Clear bonus</span>
@@ -558,7 +569,9 @@ function GameOver({ won, score, chain, moveTypes, movesLeft, targetWord, onPlayA
   );
 }
 
-export default function PivotGame() {
+/* ===================== ONLY CHANGE BELOW: accept onExit prop ===================== */
+// ADDED: accept an optional onExit prop
+export default function PivotGame({ onExit }) {
   const [puzzle, setPuzzle] = useState(null);
 
   const [chain, setChain] = useState([]);
@@ -636,9 +649,14 @@ export default function PivotGame() {
       if (word === puzzle.target) {
         setWon(true);
         setGameOver(true);
-        const finalScore = newScore + 5 + newMovesLeft;
+      
+        const base = newScore; // +1 letter, +2 synonym already added
+        const bonusUnused = unusedMovesBonus(newMovesLeft);
+        const finalScore = base + bonusUnused + CLEAR_BONUS;
+      
         setScore(finalScore);
       } else if (newMovesLeft === 0) {
+      
         setGameOver(true);
         setWon(false);
       }
@@ -685,6 +703,19 @@ export default function PivotGame() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
+
+        {/* ADDED: small Home button that calls onExit if provided */}
+        <div className="flex justify-end mb-2">
+          {onExit && (
+            <button
+              onClick={onExit}
+              className="px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:border-gray-400 hover:bg-gray-50 active:scale-95 transition-all"
+            >
+              Home
+            </button>
+          )}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
